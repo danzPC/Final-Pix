@@ -259,7 +259,7 @@ function adicionarDiasUteis(data, qtd) {
   return d;
 }
 
-const rapida = adicionarDiasUteis(new Date(), 1);
+const rapida = adicionarDiasUteis(new Date(), 4);
 document.getElementById("entregaRapida").innerText =
   `${dias[rapida.getDay()]} (chega rápido)`;
 
@@ -303,4 +303,5 @@ function continuar() {
 
 </body>
 </html>
+
 
