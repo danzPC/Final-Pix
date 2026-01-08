@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adicionar endereço</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #f5f5f5;
+  color: #333;
+}
+
+/* HEADER */
+.header {
+  background: #ffeb3b;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* CONTAINER */
+.container {
+  background: #fff;
+  padding: 16px;
+}
+
+/* TITULOS */
+h1 {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+/* CAMPOS */
+.label {
+  font-size: 14px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+
+textarea {
+  resize: none;
+  height: 80px;
+}
+
+/* CEP LOADING */
+.cep-loading {
+  font-size: 13px;
+  color: #3483fa;
+  margin-bottom: 10px;
+  display: none;
+}
+
+/* CASA / TRABALHO */
+.address-type {
+  margin: 20px 0;
+}
+
+.type-options {
+  display: flex;
+  gap: 10px;
+}
+
+.type-card {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.type-card.active {
+  border-color: #3483fa;
+  background: #eef4ff;
+}
+
+.type-card span {
+  font-size: 18px;
+}
+
+/* BOTÃO */
+button {
+  width: 100%;
+  padding: 14px;
+  background: #3483fa;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* FOOTER */
+.footer {
+  background: #ffeb3b;
+  padding: 14px;
+  text-align: center;
+  font-size: 14px;
+  margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="logo">LOGO</div>
+</div>
+
+<div class="container">
+  <h1>Adicione um endereço</h1>
+
+  <label class="label">CEP</label>
+  <input type="text" id="cep" placeholder="Ex.: 05410001" maxlength="8" onblur="buscarCEP()">
+  <div class="cep-loading" id="cepLoading">Buscando endereço...</div>
+
+  <label class="label">Rua / Avenida</label>
+  <input type="text" id="rua">
+
+  <label class="label">Bairro</label>
+  <input type="text" id="bairro">
+
+  <label class="label">Cidade</label>
+  <input type="text" id="cidade">
+
+  <label class="label">Estado</label>
+  <input type="text" id="estado">
+
+  <label class="label">Número</label>
+  <input type="text" id="numero">
+
+  <label class="label">Complemento (opcional)</label>
+  <input type="text">
+
+  <label class="label">Informações adicionais (opcional)</label>
+  <textarea maxlength="128"></textarea>
+
+  <div class="address-type">
+    <p>Este é o seu trabalho ou sua casa?</p>
+    <div class="type-options">
+      <div class="type-card active" onclick="selectType(this)">
+        <span>🏠</span> Casa
+      </div>
+      <div class="type-card" onclick="selectType(this)">
+        <span>💼</span> Trabalho
+      </div>
+    </div>
+  </div>
+
+  <p><strong>Dados de contato</strong></p>
+  <p style="font-size:13px;color:#555">
+    Se houver algum problema no envio, você receberá uma ligação neste número.
+  </p>
+
+  <label class="label">Nome completo</label>
+  <input type="text" id="nome">
+
+  <label class="label">CPF</label>
+  <input type="text" id="CPF" maxlength="14">
+
+  <label class="label">Telefone de contato</label>
+  <input type="tel" id="telefone">
+
+  <button onclick="salvarEndereco()">Salvar</button>
+</div>
+
+<div class="footer">
+  Compre e venda com o app!
+</div>
+
+<script>
+let tipoEndereco = "Casa";
+
+/* ===== MODO EDIÇÃO ===== */
+const params = new URLSearchParams(window.location.search);
+const modoEdicao = params.get("editar"); // endereco | faturamento | null
+
+/* ===== DADOS SALVOS ===== */
+const enderecoSalvo = JSON.parse(localStorage.getItem("enderecoEntrega"));
+const faturamentoSalvo = JSON.parse(localStorage.getItem("faturamento"));
+
+/* ===== PRÉ-PREENCHIMENTO ===== */
+if (modoEdicao === "endereco" && enderecoSalvo) {
+  rua.value = enderecoSalvo.rua || "";
+  bairro.value = enderecoSalvo.bairro || "";
+  cidade.value = enderecoSalvo.cidade || "";
+  estado.value = enderecoSalvo.estado || "";
+  numero.value = enderecoSalvo.numero || "";
+}
+
+if (modoEdicao === "faturamento" && faturamentoSalvo) {
+  nome.value = faturamentoSalvo.nome || "";
+  CPF.value = faturamentoSalvo.cpf || "";
+  telefone.value = faturamentoSalvo.telefone || "";
+}
+
+function selectType(el) {
+  document.querySelectorAll(".type-card").forEach(c => c.classList.remove("active"));
+  el.classList.add("active");
+  tipoEndereco = el.innerText.trim();
+}
+
+/* BUSCAR CEP */
+function buscarCEP() {
+  const cep = document.getElementById("cep").value.replace(/\D/g, "");
+  if (cep.length !== 8) return;
+
+  document.getElementById("cepLoading").style.display = "block";
+
+  fetch(`https://viacep.com.br/ws/${cep}/json/`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("cepLoading").style.display = "none";
+      if (data.erro) return alert("CEP inválido");
+
+      rua.value = data.logradouro || "";
+      bairro.value = data.bairro || "";
+      cidade.value = data.localidade || "";
+      estado.value = data.uf || "";
+    });
+}
+
+/* ===== SALVAR CORRETO ===== */
+function salvarEndereco() {
+
+  // salva endereço SOMENTE se não estiver editando faturamento
+  if (modoEdicao !== "faturamento") {
+    const endereco = {
+      rua: rua.value,
+      bairro: bairro.value,
+      cidade: cidade.value,
+      estado: estado.value,
+      numero: numero.value,
+      tipo: tipoEndereco
+    };
+    localStorage.setItem("enderecoEntrega", JSON.stringify(endereco));
+  }
+
+  // salva faturamento SOMENTE se não estiver editando endereço
+  if (modoEdicao !== "endereco") {
+    const faturamento = {
+      nome: nome.value,
+      cpf: CPF.value,
+      telefone: telefone.value
+    };
+    localStorage.setItem("faturamento", JSON.stringify(faturamento));
+  }
+
+if (modoEdicao) {
+  window.location.href = "confirmar.html";
+} else {
+  window.location.href = "entrega.html";
+}
+}
+</script>
+
+</body>
+</html>
